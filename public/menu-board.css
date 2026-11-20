@@ -1,0 +1,80 @@
+.menu-board {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 37% minmax(0, 1fr);
+  background: #211f1f;
+  color: #fffaf4;
+  font-family: system-ui, sans-serif;
+  overflow: hidden;
+}
+
+.menu-board-photo {
+  background: #3b2923 url('/menu-food.jpg') center 52% / cover no-repeat;
+  border-bottom: max(1px, .5cqw) solid #f5a04c;
+}
+
+.menu-board-panel {
+  min-width: 0;
+  padding: 3.4cqh 7cqw;
+}
+
+.menu-board-panel :is(h1, h3) {
+  display: inline-block;
+  max-width: 100%;
+  margin: 0 0 2.3cqh;
+  padding: .7cqh 2.1cqw;
+  border-radius: .7cqw;
+  background: #0e0d0d;
+  color: #fffaf4;
+  font-size: min(5.7cqw, 5.8cqh);
+  font-weight: 900;
+  line-height: 1.03;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.menu-board-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-board-panel li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2cqw;
+  align-items: baseline;
+  border-bottom: 1px solid #ffffff24;
+  padding: .65cqh 0;
+  font-size: min(3.35cqw, 3.05cqh);
+  line-height: 1.18;
+  font-weight: 650;
+}
+
+.menu-board-panel li span:first-child {
+  overflow-wrap: anywhere;
+}
+
+.menu-board-panel li span:last-child {
+  color: #ffd2a3;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+@container (orientation: landscape) {
+  .menu-board {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: 34% minmax(0, 1fr);
+  }
+
+  .menu-board-photo {
+    border-bottom: 0;
+    border-right: max(1px, .34cqw) solid #f5a04c;
+  }
+
+  .menu-board-panel {
+    padding: 5cqh 4.5cqw;
+  }
+}

@@ -202,9 +202,12 @@ function ScreenPreview({ device, status }) {
     </div>
     <div className="preview-frame">
       {!item && <p>Nog niets gepubliceerd</p>}
-      {item?.type === 'menu' && <div className="preview-menu">
-        <h3>{item.name}</h3>
-        <ul>{item.rows.map(({name, price}, index) => <li key={index}><span>{name}</span><span>{price}</span></li>)}</ul>
+      {item?.type === 'menu' && <div className="menu-board">
+        <div className="menu-board-photo" />
+        <div className="menu-board-panel">
+          <h3>{item.name}</h3>
+          <ul>{item.rows.map(({name, price}, index) => <li key={index}><span>{name}</span><span>{price}</span></li>)}</ul>
+        </div>
       </div>}
       {item?.type.startsWith('image/') && <img src={source} alt={'Gepubliceerde afbeelding op ' + device.id} />}
       {item?.type.startsWith('video/') && <video src={source + '#t=0.1'} muted playsInline preload="metadata" aria-label={'Videobeeld op ' + device.id} />}

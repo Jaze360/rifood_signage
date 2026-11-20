@@ -23,7 +23,7 @@ function message(text) {
 
 function renderMenu(item) {
   const section = document.createElement('section');
-  section.className = 'menu';
+  section.className = 'menu menu-board';
   const title = document.createElement('h1');
   title.textContent = item.name;
   const list = document.createElement('ul');
@@ -36,7 +36,12 @@ function renderMenu(item) {
     row.append(label, amount);
     list.append(row);
   }
-  section.append(title, list);
+  const photo = document.createElement('div');
+  photo.className = 'menu-board-photo';
+  const panel = document.createElement('div');
+  panel.className = 'menu-board-panel';
+  panel.append(title, list);
+  section.append(photo, panel);
   return section;
 }
 
