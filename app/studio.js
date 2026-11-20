@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 
-const sections = ['Schermen', 'Media', 'Menukaarten', 'Playlists'];
+const sections = ['Schermen', 'Voorbeelden', 'Media', 'Menukaarten', 'Playlists'];
 const blankMenu = () => ({ name: '', rows: [{ name: '', price: '' }] });
 const blankPlaylist = () => ({ name: '', items: [] });
 const date = time => new Intl.DateTimeFormat('nl-BE', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Brussels' }).format(time);
@@ -97,7 +97,7 @@ export default function Studio() {
       <div className="brand"><span className="brand-icon">▰</span> Signage Studio</div>
       <nav aria-label="Dashboard">
         {sections.map((name, index) => <button key={name} aria-current={section === name ? 'page' : undefined} onClick={() => setSection(name)}>
-          <span aria-hidden="true">{['▣', '▧', '≡', '▷'][index]}</span>{name}
+          <span aria-hidden="true">{['▣', '▥', '▧', '≡', '▷'][index]}</span>{name}
         </button>)}
       </nav>
       <button className="signout" disabled={busy} onClick={() => void act(() => post(api, { action: 'logout' }), '')}>Uitloggen</button>
@@ -126,6 +126,10 @@ export default function Studio() {
           <button className="secondary" disabled={busy} onClick={() => void act(() => navigator.clipboard.writeText(location.origin + device.url), 'Schermlink gekopieerd.')}>Kopieer link</button></div>
         </article>;
       })}</div>}
+
+      {section === 'Voorbeelden' && <div className="preview-grid">
+        {data.devices.map(device => <ScreenPreview key={device.id} device={device} status={data.status[device.id]} />)}
+      </div>}
 
       {section === 'Media' && <>
         <form className="panel" onSubmit={uploadFile}><h2>Bestand toevoegen</h2>
@@ -181,4 +185,33 @@ export default function Studio() {
       </div>}
     </main>
   </div>;
+}
+
+function ScreenPreview({ device, status }) {
+  const online = status && Date.now() - status.time < 125000;
+  const release = device.release;
+  const reported = online && status.version === release?.version && Number.isInteger(status.itemIndex)
+    ? release?.items[status.itemIndex] : undefined;
+  const item = reported || release?.items[0];
+  const source = item && '/api/upload?id=' + item.id;
+
+  return <article className="preview-card">
+    <div className="preview-header">
+      <h2>{device.id}</h2>
+      <span className={online ? 'pill online' : 'pill'}>{online ? 'Online' : status ? 'Geen signaal' : 'Nog niet verbonden'}</span>
+    </div>
+    <div className="preview-frame">
+      {!item && <p>Nog niets gepubliceerd</p>}
+      {item?.type === 'menu' && <div className="preview-menu">
+        <h3>{item.name}</h3>
+        <ul>{item.rows.map(({name, price}, index) => <li key={index}><span>{name}</span><span>{price}</span></li>)}</ul>
+      </div>}
+      {item?.type.startsWith('image/') && <img src={source} alt={'Gepubliceerde afbeelding op ' + device.id} />}
+      {item?.type.startsWith('video/') && <video src={source + '#t=0.1'} muted playsInline preload="metadata" aria-label={'Videobeeld op ' + device.id} />}
+    </div>
+    {release && <p className="preview-caption">
+      <strong>{release.name}</strong>
+      <span>{reported ? 'Laatste gemelde item · ' + date(status.time) : 'Voorbeeld van de publicatie'}</span>
+    </p>}
+  </article>;
 }

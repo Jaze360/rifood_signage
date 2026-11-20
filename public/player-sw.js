@@ -1,4 +1,4 @@
-const cacheName = 'signage-shell-v1';
+const cacheName = 'signage-shell-v2';
 const shell = ['/player.html', '/player.css', '/player.js'];
 
 self.addEventListener('install', event => {

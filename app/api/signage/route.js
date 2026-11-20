@@ -21,7 +21,7 @@ export async function GET(req) {
 
   const devices = screens.map(id => ({
     id, url: '/scherm/' + id + '#k=' + screenKey(id),
-    release: releases[id] && { version: releases[id].version, time: releases[id].time, name: releases[id].name }
+    release: releases[id]
   }));
   return json({ ...state, devices, cloud });
 }
@@ -45,7 +45,10 @@ export async function POST(req) {
     if (body.action === 'heartbeat') {
       if (!screens.includes(body.id) || !playerAllowed(req, body.id)) return json({ error: 'Ongeldige schermkoppeling.' }, 403);
       await updateState(data => {
-        data.status[body.id] = { time: Date.now(), version: clean(body.version), issue: clean(body.issue, 140) };
+        data.status[body.id] = {
+          time: Date.now(), version: clean(body.version), issue: clean(body.issue, 140),
+          itemIndex: Number.isInteger(body.itemIndex) && body.itemIndex >= 0 && body.itemIndex < 30 ? body.itemIndex : null
+        };
       });
       return json({ ok: true });
     }

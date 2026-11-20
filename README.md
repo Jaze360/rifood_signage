@@ -40,4 +40,6 @@ Open per scherm de eigen URL in Chromium-kioskmodus. Denk aan één Chromium-pro
 
 De speler controleert ongeveer om de 30 seconden op een nieuwe publicatie. Hij wisselt pas als alle bestanden daarvan in de browsercache staan. De service worker kan de speler daarna opnieuw openen bij internetuitval. Een eerste start vraagt verbinding, en de browser kan zijn opslag wissen of opruimen. Eén publicatie bevat maximaal 160 MB unieke mediabestanden. Test iedere kiosk door die online te openen, op **Publicatie geladen** te wachten, de verbinding te verbreken en de speler opnieuw te laden.
 
-Elke speler stuurt ongeveer elke minuut een signaal met de geladen publicatie en eventuele afspeelfout. Na ruim twee minuten zonder signaal toont het dashboard **Geen signaal**. Deze status bevestigt contact met de browser. Voor de fysieke beeldweergave blijft een test aan het scherm nodig.
+Elke speler stuurt ongeveer elke 30 seconden een signaal met de geladen publicatie, het zichtbare item en een eventuele afspeelfout. Na ruim twee minuten zonder signaal toont het dashboard **Geen signaal**.
+
+Bij **Voorbeelden** staan de vijf schermen naast elkaar in portretformaat. Het dashboard toont het laatst gemelde item uit de huidige publicatie. Als er geen bruikbare melding is, toont het het eerste item van de publicatie. Voor de fysieke beeldweergave blijft een test aan het scherm nodig.

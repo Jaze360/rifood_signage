@@ -13,6 +13,7 @@ let timer;
 let currentUrl;
 let revision = 0;
 let issue = '';
+let visibleIndex = null;
 
 function message(text) {
   const p = document.createElement('p');
@@ -70,6 +71,7 @@ async function render(cache) {
       }
       element.onerror = () => {
         if (frame !== revision) return;
+        visibleIndex = null;
         issue = 'Een mediabestand kan niet worden afgespeeld.';
         message(issue);
         clearTimeout(timer);
@@ -78,11 +80,13 @@ async function render(cache) {
       element.src = url;
     }
     stage.replaceChildren(element);
+    visibleIndex = index;
     if (currentUrl) URL.revokeObjectURL(currentUrl);
     currentUrl = url;
     timer = setTimeout(next, item.seconds * 1000);
   } catch (error) {
     if (frame !== revision) return;
+    visibleIndex = null;
     issue = error.message;
     message(issue);
     timer = setTimeout(next, 2500);
@@ -93,6 +97,7 @@ function activate(release, cache) {
   active = release;
   items = release.items;
   index = 0;
+  visibleIndex = null;
   issue = '';
   void render(cache);
 }
@@ -113,7 +118,7 @@ async function start() {
     try {
       await fetch(api, {
         method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'heartbeat', id, version: active?.version, issue }),
+        body: JSON.stringify({ action: 'heartbeat', id, version: active?.version, itemIndex: visibleIndex, issue }),
         signal: AbortSignal.timeout(10000)
       });
     } catch {}
@@ -148,7 +153,7 @@ async function start() {
   }
   void sync();
   void heartbeat();
-  setInterval(heartbeat, 60000);
+  setInterval(heartbeat, 30000);
 }
 
 start().catch(() => message('De speler kon de offline opslag niet openen.'));
