@@ -113,3 +113,28 @@
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .menu-board-mark {
+    animation: menu-enter 420ms ease-out both;
+  }
+
+  .menu-board-panel :is(h1, h3) {
+    animation: menu-enter 460ms ease-out 55ms both;
+  }
+
+  .menu-board-panel li {
+    animation: menu-enter 380ms ease-out calc(100ms + var(--menu-entry-delay, 0ms)) both;
+  }
+}
+
+@keyframes menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(.45em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

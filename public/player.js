@@ -38,8 +38,9 @@ function renderMenu(item) {
   const title = document.createElement('h1');
   title.textContent = item.name;
   const list = document.createElement('ul');
-  for (const { name, price, ingredients } of item.rows) {
+  for (const [rowIndex, { name, price, ingredients }] of item.rows.entries()) {
     const row = document.createElement('li');
+    row.style.setProperty('--menu-entry-delay', Math.min(rowIndex, 7) * 38 + 'ms');
     const dish = document.createElement('div');
     dish.className = 'menu-board-dish';
     const label = document.createElement('span');

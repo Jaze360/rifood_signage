@@ -249,7 +249,7 @@ function ScreenPreview({ device, status }) {
     </div>
     <div className="preview-frame" data-orientation={device.orientation === 'landscape' ? 'landscape' : 'portrait'}>
       {!item && <p>Nog niets gepubliceerd</p>}
-      {item?.type === 'menu' && <MenuBoardPreview item={item} />}
+      {item?.type === 'menu' && <MenuBoardPreview key={item.id} item={item} />}
       {item?.type.startsWith('image/') && <img src={source} alt={'Gepubliceerde afbeelding op ' + device.id} />}
       {item?.type.startsWith('video/') && <video src={source + '#t=0.1'} muted playsInline preload="metadata" aria-label={'Videobeeld op ' + device.id} />}
     </div>
@@ -267,7 +267,7 @@ function MenuBoardPreview({ item }) {
     <div className="menu-board-panel">
       <img className="menu-board-mark" src="/rifood-mark.png" alt="" />
       <h3>{item.name}</h3>
-      <ul>{item.rows.map(({ name, price, ingredients }, index) => <li key={index}>
+      <ul>{item.rows.map(({ name, price, ingredients }, index) => <li key={index} style={{ '--menu-entry-delay': Math.min(index, 7) * 38 + 'ms' }}>
         <div className="menu-board-dish"><span>{name}</span>{ingredients && <small>{ingredients}</small>}</div>
         <span className="menu-board-price">{price}</span>
       </li>)}</ul>
