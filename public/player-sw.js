@@ -1,4 +1,4 @@
-const cacheName = 'signage-shell-v12';
+const cacheName = 'signage-shell-v13';
 const shell = ['/player.html', '/player.css', '/player.js', '/menu-board.css', '/menu-board-fit.js', '/rifood-mark.png', '/rifood-pattern.png'];
 
 self.addEventListener('install', event => {
@@ -21,3 +21,4 @@ self.addEventListener('fetch', event => {
     (await caches.open(cacheName)).match(path)
   ));
 });
+
