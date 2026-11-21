@@ -55,12 +55,10 @@ function renderMenu(item) {
     row.append(dish, amount);
     list.append(row);
   }
-  const photo = document.createElement('div');
-  photo.className = 'menu-board-photo';
   const panel = document.createElement('div');
   panel.className = 'menu-board-panel';
   panel.append(title, list);
-  section.append(photo, panel);
+  section.append(panel);
   return section;
 }
 

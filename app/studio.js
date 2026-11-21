@@ -241,7 +241,6 @@ function MenuBoardPreview({ item }) {
   const board = useRef(null);
   useEffect(() => fitMenuBoard(board.current), [item]);
   return <div className="menu-board" ref={board}>
-    <div className="menu-board-photo" />
     <div className="menu-board-panel">
       <h3>{item.name}</h3>
       <ul>{item.rows.map(({ name, price, ingredients }, index) => <li key={index}>

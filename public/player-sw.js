@@ -1,5 +1,5 @@
-const cacheName = 'signage-shell-v7';
-const shell = ['/player.html', '/player.css', '/player.js', '/menu-board.css', '/menu-board-fit.js', '/menu-food.jpg'];
+const cacheName = 'signage-shell-v8';
+const shell = ['/player.html', '/player.css', '/player.js', '/menu-board.css', '/menu-board-fit.js'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(cacheName).then(cache => cache.addAll(shell)).then(() => self.skipWaiting()));
