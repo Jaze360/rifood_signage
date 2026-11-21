@@ -25,7 +25,8 @@ function needsPublication(data, playlist, release) {
     const saved = release.items[index];
     if (item.id !== saved.id || item.type !== saved.type || item.seconds !== saved.seconds) return true;
     return item.type === 'menu' && (item.name !== saved.name || item.rows.length !== saved.rows.length ||
-      item.rows.some((row, i) => row.name !== saved.rows[i].name || row.price !== saved.rows[i].price));
+      item.rows.some((row, i) => row.name !== saved.rows[i].name || row.price !== saved.rows[i].price ||
+        (row.ingredients || '') !== (saved.rows[i].ingredients || '')));
   });
 }
 
@@ -103,7 +104,7 @@ export async function POST(req) {
         case 'menu': {
           const name = clean(body.name);
           const rows = Array.isArray(body.rows) ? body.rows.slice(0, 12).map(row => ({
-            name: clean(row.name, 80), price: clean(row.price, 30)
+            name: clean(row.name, 80), price: clean(row.price, 30), ingredients: clean(row.ingredients, 240)
           })).filter(row => row.name) : [];
           if (!name || !rows.length) invalid('Voeg een titel en minstens één gerecht toe.');
           if (body.id) {
@@ -148,6 +149,16 @@ export async function POST(req) {
           break;
         }
         case 'publish': {
+          if (Array.isArray(body.menuIds)) {
+            const release = data.releases[body.id];
+            if (!screens.includes(body.id) || !release) invalid('Er is geen publicatie voor dit scherm.');
+            const menus = new Map(data.menus.filter(menu => body.menuIds.includes(menu.id)).map(menu => [menu.id, menu]));
+            if (!release.items.some(item => item.type === 'menu' && menus.has(item.id))) break;
+            const items = release.items.map(item => item.type === 'menu' && menus.has(item.id)
+              ? { ...item, ...menus.get(item.id) } : item);
+            data.releases[body.id] = { ...release, items, version: randomUUID(), time: Date.now() };
+            break;
+          }
           publish(data, body.id);
           break;
         }

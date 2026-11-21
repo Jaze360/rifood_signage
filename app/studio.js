@@ -161,10 +161,12 @@ export default function Studio() {
         }}>
           <h2>{menu.id ? 'Menukaart bewerken' : 'Nieuwe menukaart'}</h2>
           <label>Titel<input required maxLength={100} value={menu.name} onChange={event => setMenu({ ...menu, name: event.target.value })} /></label>
-          {menu.rows.map((row, index) => <div className="row" key={index}>
+          {menu.rows.map((row, index) => <div className="menu-edit-item" key={index}><div className="row">
             <label>Gerecht<input maxLength={80} value={row.name} onChange={event => setMenu({ ...menu, rows: menu.rows.map((item, i) => i === index ? { ...item, name: event.target.value } : item) })} /></label>
             <label>Prijs<input maxLength={30} value={row.price} onChange={event => setMenu({ ...menu, rows: menu.rows.map((item, i) => i === index ? { ...item, price: event.target.value } : item) })} /></label>
             <button type="button" className="secondary" aria-label={'Verwijder gerecht ' + (index + 1)} disabled={menu.rows.length === 1} onClick={() => setMenu({ ...menu, rows: menu.rows.filter((_, i) => i !== index) })}>×</button>
+          </div>
+            <label>Ingrediënten<input maxLength={240} value={row.ingredients || ''} onChange={event => setMenu({ ...menu, rows: menu.rows.map((item, i) => i === index ? { ...item, ingredients: event.target.value } : item) })} /></label>
           </div>)}
           <div className="actions"><button type="button" className="secondary" disabled={menu.rows.length >= 12} onClick={() => setMenu({ ...menu, rows: [...menu.rows, { name: '', price: '' }] })}>+ Gerecht</button><button disabled={busy}>Opslaan</button></div>
         </form>
@@ -242,7 +244,10 @@ function MenuBoardPreview({ item }) {
     <div className="menu-board-photo" />
     <div className="menu-board-panel">
       <h3>{item.name}</h3>
-      <ul>{item.rows.map(({ name, price }, index) => <li key={index}><span>{name}</span><span>{price}</span></li>)}</ul>
+      <ul>{item.rows.map(({ name, price, ingredients }, index) => <li key={index}>
+        <div className="menu-board-dish"><span>{name}</span>{ingredients && <small>{ingredients}</small>}</div>
+        <span className="menu-board-price">{price}</span>
+      </li>)}</ul>
     </div>
   </div>;
 }

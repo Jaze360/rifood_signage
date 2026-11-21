@@ -37,13 +37,22 @@ function renderMenu(item) {
   const title = document.createElement('h1');
   title.textContent = item.name;
   const list = document.createElement('ul');
-  for (const { name, price } of item.rows) {
+  for (const { name, price, ingredients } of item.rows) {
     const row = document.createElement('li');
+    const dish = document.createElement('div');
+    dish.className = 'menu-board-dish';
     const label = document.createElement('span');
     const amount = document.createElement('span');
     label.textContent = name;
     amount.textContent = price;
-    row.append(label, amount);
+    amount.className = 'menu-board-price';
+    dish.append(label);
+    if (ingredients) {
+      const details = document.createElement('small');
+      details.textContent = ingredients;
+      dish.append(details);
+    }
+    row.append(dish, amount);
     list.append(row);
   }
   const photo = document.createElement('div');

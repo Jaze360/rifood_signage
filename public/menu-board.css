@@ -86,7 +86,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) fit-content(40%);
   gap: 2cqw;
-  align-items: center;
+  align-items: start;
   border-bottom: 1px solid #ffffff24;
   padding: calc(var(--row-pad) * var(--text-scale)) 0;
   font-size: calc(var(--row-size) * var(--text-scale));
@@ -95,7 +95,20 @@
   overflow-wrap: anywhere;
 }
 
-.menu-board-panel li span:last-child {
+.menu-board-dish {
+  min-width: 0;
+}
+
+.menu-board-dish small {
+  display: block;
+  margin-top: .2em;
+  color: #ddd0c4;
+  font-size: .63em;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.menu-board-price {
   color: #ffd2a3;
   font-variant-numeric: tabular-nums;
   text-align: right;
