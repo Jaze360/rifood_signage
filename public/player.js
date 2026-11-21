@@ -15,6 +15,7 @@ let timer;
 let currentUrl;
 let revision = 0;
 let issue = '';
+let syncIssue = '';
 let visibleIndex = null;
 let stopFitting = () => {};
 
@@ -59,15 +60,33 @@ async function render(cache) {
   clearTimeout(timer);
   if (!items.length) { message('Wachten op een gepubliceerde playlist…'); return; }
   const item = items[index];
+  let failed = false;
   const next = () => {
     if (frame !== revision) return;
     clearTimeout(timer);
     index = (index + 1) % items.length;
     void render(cache);
   };
+  const fail = () => {
+    if (frame !== revision || failed) return;
+    failed = true;
+    visibleIndex = null;
+    issue = 'Een mediabestand kan niet worden afgespeeld.';
+    message(issue);
+    clearTimeout(timer);
+    timer = setTimeout(next, 2500);
+  };
+  const playing = () => {
+    if (frame !== revision || failed) return;
+    visibleIndex = index;
+    issue = '';
+    clearTimeout(timer);
+    timer = setTimeout(next, item.seconds * 1000);
+  };
+  let url;
   try {
     let element;
-    let url;
+    const video = item.type.startsWith('video/');
     if (item.type === 'menu') element = renderMenu(item);
     else {
       const response = await cache.match(mediaUrl(item));
@@ -75,35 +94,31 @@ async function render(cache) {
       const blob = await response.blob();
       if (frame !== revision) return;
       url = URL.createObjectURL(blob);
-      const video = item.type.startsWith('video/');
       element = document.createElement(video ? 'video' : 'img');
       if (video) {
         element.muted = true;
-        element.autoplay = true;
         element.playsInline = true;
         element.onended = next;
       }
-      element.onerror = () => {
-        if (frame !== revision) return;
-        visibleIndex = null;
-        issue = 'Een mediabestand kan niet worden afgespeeld.';
-        message(issue);
-        clearTimeout(timer);
-        timer = setTimeout(next, 2500);
-      };
       element.src = url;
+      if (!video) await element.decode();
+    }
+    if (frame !== revision) {
+      if (url) URL.revokeObjectURL(url);
+      return;
     }
     show(element);
-    visibleIndex = index;
     if (currentUrl) URL.revokeObjectURL(currentUrl);
     currentUrl = url;
-    timer = setTimeout(next, item.seconds * 1000);
-  } catch (error) {
-    if (frame !== revision) return;
-    visibleIndex = null;
-    issue = error.message;
-    message(issue);
-    timer = setTimeout(next, 2500);
+    if (video) {
+      visibleIndex = null;
+      element.onerror = fail;
+      timer = setTimeout(fail, 12000);
+      void element.play().then(playing, fail);
+    } else playing();
+  } catch {
+    if (url) URL.revokeObjectURL(url);
+    fail();
   }
 }
 
@@ -133,7 +148,7 @@ async function start() {
     try {
       await fetch(api, {
         method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'heartbeat', id, version: active?.version, itemIndex: visibleIndex, issue }),
+        body: JSON.stringify({ action: 'heartbeat', id, version: active?.version, itemIndex: visibleIndex, issue: issue || syncIssue }),
         signal: AbortSignal.timeout(10000)
       });
     } catch {}
@@ -154,22 +169,26 @@ async function start() {
         }
       }
       if (release.version && active?.version !== release.version) {
-        const files = [...new Set(release.items.filter(item => item.type !== 'menu').map(mediaUrl))];
-        for (const url of files) {
-          if (await cache.match(url)) continue;
+        const files = new Map(release.items.filter(item => item.type !== 'menu').map(item => [mediaUrl(item), item.type]));
+        for (const [url, type] of files) {
+          const cached = await cache.match(url);
+          if (cached?.headers.get('content-type') === type) continue;
           const file = await fetch(url, { headers: auth, cache: 'no-store', signal: AbortSignal.timeout(120000) });
-          if (!file.ok) throw new Error('Een nieuw mediabestand kon niet worden opgehaald.');
+          if (!file.ok || file.headers.get('content-type') !== type) {
+            throw new Error('Een nieuw mediabestand kon niet worden opgehaald (HTTP ' + file.status + ').');
+          }
           await cache.put(url, file);
         }
         await cache.put(manifest, new Response(JSON.stringify(release)));
         activate(release, cache);
-        const keep = new Set([new URL(manifest, location.origin).href, ...files.map(url => new URL(url, location.origin).href)]);
+        const keep = new Set([new URL(manifest, location.origin).href, ...Array.from(files.keys(), url => new URL(url, location.origin).href)]);
         for (const entry of await cache.keys()) {
           if (!keep.has(entry.url)) await cache.delete(entry);
         }
       }
+      syncIssue = '';
     } catch (error) {
-      if (navigator.onLine) issue = error.message;
+      if (navigator.onLine) syncIssue = error.message;
     } finally {
       setTimeout(sync, 30000);
     }

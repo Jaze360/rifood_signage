@@ -127,6 +127,7 @@ export default function Studio() {
             void act(() => post(api, { action: 'assign', id: device.id, playlist: value }), 'Playlist toegewezen.');
           }}><option value="" disabled>Kies een playlist</option>{data.playlists.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
           <dl><dt>Gepubliceerd</dt><dd>{device.release ? device.release.name + ' · ' + date(device.release.time) : 'Nog niets gepubliceerd'}</dd>
+          {device.unpublished && <><dt>Playlist</dt><dd className="pending">Opgeslagen wijzigingen wachten op publicatie</dd></>}
           <dt>Laatste signaal</dt><dd>{status ? date(status.time) : '—'}</dd>
           {online && device.release && <><dt>Speler</dt><dd>{status.version === device.release.version ? 'Publicatie geladen' : 'Publicatie wordt nog opgehaald'}</dd></>}
           {status?.issue && <><dt>Melding</dt><dd>{status.issue}</dd></>}</dl>
@@ -173,7 +174,11 @@ export default function Studio() {
         <section className="panel collection"><h2>Playlists</h2>{data.playlists.map(item => <button className="secondary" key={item.id} onClick={() => setPlaylist(item)}>{item.name}</button>)}<button className="secondary" onClick={() => setPlaylist(blankPlaylist())}>+ Nieuwe playlist</button></section>
         <form className="panel" onSubmit={event => {
           event.preventDefault();
-          void act(() => post(api, { ...playlist, action: 'playlist' }), 'Playlist opgeslagen.');
+          const publishTo = event.nativeEvent.submitter?.value || undefined;
+          void act(async () => {
+            const result = await post(api, { ...playlist, action: 'playlist', publishTo });
+            setPlaylist({ ...playlist, id: result.playlistId });
+          }, publishTo ? 'Gepubliceerd op ' + publishTo + '.' : 'Concept opgeslagen.');
         }}>
           <h2>{playlist.id ? 'Playlist bewerken' : 'Nieuwe playlist'}</h2>
           <label>Naam<input maxLength={100} required value={playlist.name} onChange={event => setPlaylist({ ...playlist, name: event.target.value })} /></label>
@@ -189,7 +194,13 @@ export default function Studio() {
             }}>↑</button>
             <button type="button" className="secondary" aria-label="Verwijderen" onClick={() => setPlaylist({ ...playlist, items: playlist.items.filter((_, i) => i !== index) })}>×</button>
           </li>)}</ol>
-          <button disabled={busy || !playlist.items.length}>Opslaan</button>
+          <div className="actions">
+            <button className="secondary" disabled={busy || !playlist.items.length}>Opslaan</button>
+            {playlist.id && data.devices.filter(device => data.assignments[device.id] === playlist.id).map(device =>
+              <button key={device.id} value={device.id} disabled={busy || !playlist.items.length}>
+                Opslaan en publiceren op {device.id}
+              </button>)}
+          </div>
         </form>
       </div>}
     </main>

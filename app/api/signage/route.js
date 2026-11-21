@@ -8,6 +8,39 @@ const json = (data, status = 200) => NextResponse.json(data, { status, headers: 
 const clean = (value, size = 100) => typeof value === 'string' ? value.trim().slice(0, size) : '';
 const invalid = message => { throw new RangeError(message); };
 
+function publicationItems(data, playlist) {
+  return playlist.items.map(({ id, seconds }) => {
+    const media = data.media.find(item => item.id === id);
+    if (media) return { id, type: media.type, seconds };
+    const menu = data.menus.find(item => item.id === id);
+    if (!menu) invalid('Een item bestaat niet meer.');
+    return { ...menu, type: 'menu', seconds };
+  });
+}
+
+function needsPublication(data, playlist, release) {
+  if (!playlist) return false;
+  if (!release || release.name !== playlist.name || release.items.length !== playlist.items.length) return true;
+  return publicationItems(data, playlist).some((item, index) => {
+    const saved = release.items[index];
+    if (item.id !== saved.id || item.type !== saved.type || item.seconds !== saved.seconds) return true;
+    return item.type === 'menu' && (item.name !== saved.name || item.rows.length !== saved.rows.length ||
+      item.rows.some((row, i) => row.name !== saved.rows[i].name || row.price !== saved.rows[i].price));
+  });
+}
+
+function publish(data, id) {
+  if (!screens.includes(id)) invalid('Onbekend scherm.');
+  const playlist = data.playlists.find(item => item.id === data.assignments[id]);
+  if (!playlist) invalid('Wijs eerst een playlist toe.');
+  const items = publicationItems(data, playlist);
+  const mediaIds = new Set(items.filter(item => item.type !== 'menu').map(item => item.id));
+  if (data.media.filter(item => mediaIds.has(item.id)).reduce((sum, item) => sum + item.size, 0) > 160 * 1024 * 1024) {
+    invalid('De media van één publicatie mogen samen maximaal 160 MB groot zijn.');
+  }
+  data.releases[id] = { version: randomUUID(), time: Date.now(), name: playlist.name, items };
+}
+
 export async function GET(req) {
   if (!configured()) return json({ error: 'Stel eerst het wachtwoord en de geheime sleutel in.' }, 503);
   const id = new URL(req.url).searchParams.get('screen');
@@ -26,7 +59,8 @@ export async function GET(req) {
   const devices = screens.map(id => ({
     id, url: '/scherm/' + id + '#k=' + screenKey(id),
     release: releases[id],
-    orientation: state.orientations?.[id] || 'auto'
+    orientation: state.orientations?.[id] || 'auto',
+    unpublished: needsPublication(state, state.playlists.find(item => item.id === state.assignments[id]), releases[id])
   }));
   return json({ ...state, devices, cloud });
 }
@@ -64,7 +98,7 @@ export async function POST(req) {
       return res;
     }
 
-    await updateState(data => {
+    const result = await updateState(data => {
       switch (body.action) {
         case 'menu': {
           const name = clean(body.name);
@@ -87,12 +121,18 @@ export async function POST(req) {
             if (!Number.isInteger(seconds) || seconds < 2 || seconds > 300) invalid('Kies 2 tot 300 seconden per item.');
             return { id, seconds };
           });
+          if (body.publishTo !== undefined &&
+              (!screens.includes(body.publishTo) || !body.id || data.assignments[body.publishTo] !== body.id)) {
+            invalid('Deze playlist is niet toegewezen aan het gekozen scherm.');
+          }
+          const playlistId = body.id || randomUUID();
           if (body.id) {
             const playlist = data.playlists.find(item => item.id === body.id);
             if (!playlist) invalid('Playlist niet gevonden.');
             Object.assign(playlist, { name, items });
-          } else data.playlists.push({ id: randomUUID(), name, items });
-          break;
+          } else data.playlists.push({ id: playlistId, name, items });
+          if (body.publishTo) publish(data, body.publishTo);
+          return { playlistId };
         }
         case 'orientation': {
           if (!screens.includes(body.id) || !['auto', 'portrait', 'landscape'].includes(body.orientation)) {
@@ -108,26 +148,13 @@ export async function POST(req) {
           break;
         }
         case 'publish': {
-          if (!screens.includes(body.id)) invalid('Onbekend scherm.');
-          const playlist = data.playlists.find(item => item.id === data.assignments[body.id]);
-          if (!playlist) invalid('Wijs eerst een playlist toe.');
-          const items = playlist.items.map(({ id, seconds }) => {
-            const media = data.media.find(item => item.id === id);
-            if (media) return { id, type: media.type, seconds };
-            const menu = data.menus.find(item => item.id === id);
-            return { ...menu, type: 'menu', seconds };
-          });
-          const total = new Set(items.filter(item => item.type !== 'menu').map(item => item.id));
-          if (data.media.filter(item => total.has(item.id)).reduce((sum, item) => sum + item.size, 0) > 160 * 1024 * 1024) {
-            invalid('De media van één publicatie mogen samen maximaal 160 MB groot zijn.');
-          }
-          data.releases[body.id] = { version: randomUUID(), time: Date.now(), name: playlist.name, items };
+          publish(data, body.id);
           break;
         }
         default: invalid('Onbekende opdracht.');
       }
     });
-    return json({ ok: true });
+    return json({ ok: true, ...result });
   } catch (error) {
     if (error instanceof RangeError || error instanceof SyntaxError) return json({ error: error.message }, 400);
     console.error(error);
