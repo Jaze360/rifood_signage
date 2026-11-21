@@ -7,6 +7,7 @@ const api = '/api/signage';
 const auth = { Authorization: 'Bearer ' + key };
 const namespace = 'signage-content-' + id + '-' + key;
 const manifest = '/player-cache/' + id + '/manifest';
+const refreshStorageKey = 'signage-refresh-' + id;
 const mediaUrl = item => '/api/upload?id=' + item.id + '&screen=' + id;
 let active;
 let items = [];
@@ -165,6 +166,7 @@ async function start() {
   if (!('caches' in window)) { message('Open deze speler via HTTPS of localhost.'); return; }
   navigator.serviceWorker?.register('/player-sw.js').catch(() => {});
   const cache = await caches.open(namespace);
+  let completedRefresh = sessionStorage.getItem(refreshStorageKey);
   const saved = await cache.match(manifest);
   if (saved) activate(await saved.json(), cache);
   else message('Wachten op een gepubliceerde playlist…');
@@ -173,7 +175,7 @@ async function start() {
     try {
       await fetch(api, {
         method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'heartbeat', id, version: active?.version, itemIndex: visibleIndex, issue: issue || syncIssue }),
+        body: JSON.stringify({ action: 'heartbeat', id, version: active?.version, itemIndex: visibleIndex, issue: issue || syncIssue, refreshId: completedRefresh }),
         signal: AbortSignal.timeout(10000)
       });
     } catch {}
@@ -185,6 +187,14 @@ async function start() {
       if (response.status === 403 && !active) message('Deze schermlink is ongeldig.');
       if (!response.ok) throw new Error('Publicatie ophalen mislukt.');
       const release = await response.json();
+      if (release.refreshId && release.refreshId !== completedRefresh) {
+        completedRefresh = release.refreshId;
+        sessionStorage.setItem(refreshStorageKey, completedRefresh);
+        if (release.refreshAgeMs <= performance.now()) {
+          location.reload();
+          return;
+        }
+      }
       const orientation = release.orientation || 'auto';
       if (!active || active.version === release.version) {
         stage.dataset.orientation = orientation;

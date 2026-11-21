@@ -208,3 +208,25 @@ textarea {
     min-width: 44px;
   }
 }
+.refresh-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-bottom: 16px;
+}
+
+.refresh-panel span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 740px) {
+  .refresh-panel {
+    display: grid;
+  }
+
+  .refresh-panel button {
+    width: 100%;
+  }
+}

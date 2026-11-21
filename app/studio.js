@@ -93,6 +93,7 @@ export default function Studio() {
   </main>;
 
   const assets = [...data.media, ...data.menus];
+  const refreshed = data.refresh ? data.devices.filter(device => data.status[device.id]?.refreshId === data.refresh.id).length : 0;
   return <div className="app">
     <aside>
       <div className="brand"><span className="brand-icon">▰</span> Signage Studio</div>
@@ -111,6 +112,12 @@ export default function Studio() {
       <header><div><p className="eyebrow">DIGITAL SIGNAGE</p><h1>{section}</h1></div><button className="secondary" onClick={() => void act(async () => {}, 'Bijgewerkt.')} disabled={busy}>Vernieuwen</button></header>
       {error && <p role="alert" className="error">{error}</p>}
       {notice && <p role="status" className="notice">{notice}</p>}
+      {section === 'Schermen' && <div className="refresh-panel">
+        <button disabled={busy} onClick={() => void act(() => post(api, { action: 'refresh-all' }), 'Herlaadopdracht verstuurd.')}>
+          Alle schermen herladen
+        </button>
+        {data.refresh && <span role="status">Herladen bevestigd door {refreshed} van {data.devices.length} schermen</span>}
+      </div>}
 
       {section === 'Schermen' && <div className="screen-grid">{data.devices.map(device => {
         const status = data.status[device.id];
@@ -133,6 +140,7 @@ export default function Studio() {
           <dl><dt>Gepubliceerd</dt><dd>{device.release ? device.release.name + ' · ' + date(device.release.time) : 'Nog niets gepubliceerd'}</dd>
           {device.unpublished && <><dt>Playlist</dt><dd className="pending">Opgeslagen wijzigingen wachten op publicatie</dd></>}
           <dt>Laatste signaal</dt><dd>{status ? date(status.time) : '—'}</dd>
+          {data.refresh && <><dt>Herlaadopdracht</dt><dd>{status?.refreshId === data.refresh.id ? 'Bevestigd' : 'Wacht op bevestiging'}</dd></>}
           {online && device.release && <><dt>Speler</dt><dd>{status.version === device.release.version ? 'Publicatie geladen' : 'Publicatie wordt nog opgehaald'}</dd></>}
           {status?.issue && <><dt>Melding</dt><dd>{status.issue}</dd></>}</dl>
           <div className="actions"><button disabled={busy || !data.assignments[device.id]} onClick={() => void act(() => post(api, { action: 'publish', id: device.id }), 'Gepubliceerd op ' + device.id + '.')}>Publiceren</button>

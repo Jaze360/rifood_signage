@@ -50,7 +50,9 @@ export async function GET(req) {
     const state = await readState();
     return json({
       ...(state.releases[id] || { items: [], version: null }),
-      orientation: state.orientations?.[id] || 'auto'
+      orientation: state.orientations?.[id] || 'auto',
+      refreshId: state.refresh?.id || null,
+      refreshAgeMs: state.refresh ? Math.max(0, Date.now() - state.refresh.time) : null
     });
   }
   if (!(await adminAllowed())) return json({ error: 'Log in om verder te gaan.' }, 401);
@@ -87,6 +89,7 @@ export async function POST(req) {
       await updateState(data => {
         data.status[body.id] = {
           time: Date.now(), version: clean(body.version), issue: clean(body.issue, 140),
+          refreshId: clean(body.refreshId),
           itemIndex: Number.isInteger(body.itemIndex) && body.itemIndex >= 0 && body.itemIndex < 30 ? body.itemIndex : null
         };
       });
@@ -101,6 +104,9 @@ export async function POST(req) {
 
     const result = await updateState(data => {
       switch (body.action) {
+        case 'refresh-all':
+          data.refresh = { id: randomUUID(), time: Date.now() };
+          return { refresh: data.refresh };
         case 'menu': {
           const name = clean(body.name);
           const rows = Array.isArray(body.rows) ? body.rows.slice(0, 12).map(row => ({
