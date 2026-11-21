@@ -126,6 +126,7 @@
     inset: 0 0 auto;
     height: 36%;
     background: linear-gradient(112deg, transparent 30%, #dfb04b18 50%, transparent 70%);
+    background-size: 230% 100%;
     animation: menu-gold-sweep 1150ms ease-out both;
   }
 
@@ -153,9 +154,9 @@
 }
 
 @keyframes menu-gold-sweep {
-  from { transform: translateX(-70%); opacity: 0; }
+  from { background-position: 100% 0; opacity: 0; }
   38% { opacity: 1; }
-  to { transform: translateX(70%); opacity: 0; }
+  to { background-position: 0 0; opacity: 0; }
 }
 
 @keyframes menu-gold-rule {
