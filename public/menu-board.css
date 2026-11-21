@@ -13,9 +13,8 @@
   display: grid;
   grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   background:
-    linear-gradient(180deg, #12121200, #121212 90%),
-    repeating-linear-gradient(45deg, transparent 0 3.5cqw, #e0ae401e 3.5cqw calc(3.5cqw + 1px)),
-    repeating-linear-gradient(-45deg, transparent 0 3.5cqw, #e0ae401e 3.5cqw calc(3.5cqw + 1px)),
+    linear-gradient(180deg, #12121200 12%, #121212 95%),
+    url('/rifood-pattern.png') center top / 10cqw auto repeat,
     #121212;
   color: var(--board-ink);
   font-family: system-ui, sans-serif;
