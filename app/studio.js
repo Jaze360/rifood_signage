@@ -242,6 +242,7 @@ function MenuBoardPreview({ item }) {
   useEffect(() => fitMenuBoard(board.current), [item]);
   return <div className="menu-board" ref={board}>
     <div className="menu-board-panel">
+      <img className="menu-board-mark" src="/rifood-mark.png" alt="" />
       <h3>{item.name}</h3>
       <ul>{item.rows.map(({ name, price, ingredients }, index) => <li key={index}>
         <div className="menu-board-dish"><span>{name}</span>{ingredients && <small>{ingredients}</small>}</div>

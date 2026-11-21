@@ -57,7 +57,11 @@ function renderMenu(item) {
   }
   const panel = document.createElement('div');
   panel.className = 'menu-board-panel';
-  panel.append(title, list);
+  const mark = document.createElement('img');
+  mark.className = 'menu-board-mark';
+  mark.src = '/rifood-mark.png';
+  mark.alt = '';
+  panel.append(mark, title, list);
   section.append(panel);
   return section;
 }
