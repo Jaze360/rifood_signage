@@ -130,11 +130,10 @@
 
 @keyframes menu-enter {
   from {
-    opacity: 0;
-    transform: translateY(.45em);
+    transform: translateY(-.08em);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
+
