@@ -1,5 +1,5 @@
 .menu-board {
-  --photo-height: 32%;
+  --board-rows: 32% minmax(0, 1fr);
   --photo-width: minmax(0, 1fr);
   --photo-border-bottom: max(1px, .5cqw);
   --photo-border-right: 0px;
@@ -12,7 +12,7 @@
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template: var(--photo-height) minmax(0, 1fr) / var(--photo-width);
+  grid-template: var(--board-rows) / var(--photo-width);
   background: #211f1f;
   color: #fffaf4;
   font-family: system-ui, sans-serif;
@@ -20,7 +20,7 @@
 }
 
 [data-orientation="landscape"] .menu-board {
-  --photo-height: minmax(0, 1fr);
+  --board-rows: minmax(0, 1fr);
   --photo-width: 34% minmax(0, 1fr);
   --photo-border-bottom: 0px;
   --photo-border-right: max(1px, .34cqw);
@@ -29,7 +29,7 @@
 
 @container (orientation: landscape) {
   [data-orientation="auto"] .menu-board {
-    --photo-height: minmax(0, 1fr);
+    --board-rows: minmax(0, 1fr);
     --photo-width: 34% minmax(0, 1fr);
     --photo-border-bottom: 0px;
     --photo-border-right: max(1px, .34cqw);
