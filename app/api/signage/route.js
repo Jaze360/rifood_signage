@@ -13,7 +13,11 @@ export async function GET(req) {
   const id = new URL(req.url).searchParams.get('screen');
   if (id !== null) {
     if (!screens.includes(id) || !playerAllowed(req, id)) return json({ error: 'Ongeldige schermkoppeling.' }, 403);
-    return json((await readState()).releases[id] || { items: [], version: null });
+    const state = await readState();
+    return json({
+      ...(state.releases[id] || { items: [], version: null }),
+      orientation: state.orientations?.[id] || 'auto'
+    });
   }
   if (!(await adminAllowed())) return json({ error: 'Log in om verder te gaan.' }, 401);
   const { releases, ...state } = await readState();
@@ -21,7 +25,8 @@ export async function GET(req) {
 
   const devices = screens.map(id => ({
     id, url: '/scherm/' + id + '#k=' + screenKey(id),
-    release: releases[id]
+    release: releases[id],
+    orientation: state.orientations?.[id] || 'auto'
   }));
   return json({ ...state, devices, cloud });
 }
@@ -87,6 +92,14 @@ export async function POST(req) {
             if (!playlist) invalid('Playlist niet gevonden.');
             Object.assign(playlist, { name, items });
           } else data.playlists.push({ id: randomUUID(), name, items });
+          break;
+        }
+        case 'orientation': {
+          if (!screens.includes(body.id) || !['auto', 'portrait', 'landscape'].includes(body.orientation)) {
+            invalid('Kies een geldige schermoriëntatie.');
+          }
+          data.orientations ??= {};
+          data.orientations[body.id] = body.orientation;
           break;
         }
         case 'assign': {

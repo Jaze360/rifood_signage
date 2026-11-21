@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { upload } from '@vercel/blob/client';
+import { fitMenuBoard } from '../public/menu-board-fit';
 
 const sections = ['Schermen', 'Voorbeelden', 'Media', 'Menukaarten', 'Playlists'];
 const blankMenu = () => ({ name: '', rows: [{ name: '', price: '' }] });
@@ -113,6 +114,14 @@ export default function Studio() {
         return <article className="screen" key={device.id}>
           <div className="screen-head"><span className="display-icon">▣</span><span className={online ? 'pill online' : 'pill'}>{online ? 'Online' : status ? 'Geen signaal' : 'Nog niet verbonden'}</span></div>
           <h2>{device.id}</h2><p className="muted">{device.id.startsWith('pi') ? 'Raspberry Pi 4' : 'Dell Wyse 5070'} · 1920 × 1080</p>
+          <label>Schermoriëntatie<select disabled={busy} value={device.orientation} onChange={event => {
+            const orientation = event.target.value;
+            void act(() => post(api, { action: 'orientation', id: device.id, orientation }), 'Schermoriëntatie opgeslagen.');
+          }}>
+            <option value="auto">Automatisch</option>
+            <option value="portrait">Portret · 9:16</option>
+            <option value="landscape">Landschap · 16:9</option>
+          </select></label>
           <label>Toegewezen playlist<select disabled={busy} value={data.assignments[device.id] || ''} onChange={event => {
             const value = event.target.value;
             void act(() => post(api, { action: 'assign', id: device.id, playlist: value }), 'Playlist toegewezen.');
@@ -200,15 +209,9 @@ function ScreenPreview({ device, status }) {
       <h2>{device.id}</h2>
       <span className={online ? 'pill online' : 'pill'}>{online ? 'Online' : status ? 'Geen signaal' : 'Nog niet verbonden'}</span>
     </div>
-    <div className="preview-frame">
+    <div className="preview-frame" data-orientation={device.orientation === 'landscape' ? 'landscape' : 'portrait'}>
       {!item && <p>Nog niets gepubliceerd</p>}
-      {item?.type === 'menu' && <div className="menu-board">
-        <div className="menu-board-photo" />
-        <div className="menu-board-panel">
-          <h3>{item.name}</h3>
-          <ul>{item.rows.map(({name, price}, index) => <li key={index}><span>{name}</span><span>{price}</span></li>)}</ul>
-        </div>
-      </div>}
+      {item?.type === 'menu' && <MenuBoardPreview item={item} />}
       {item?.type.startsWith('image/') && <img src={source} alt={'Gepubliceerde afbeelding op ' + device.id} />}
       {item?.type.startsWith('video/') && <video src={source + '#t=0.1'} muted playsInline preload="metadata" aria-label={'Videobeeld op ' + device.id} />}
     </div>
@@ -217,4 +220,16 @@ function ScreenPreview({ device, status }) {
       <span>{reported ? 'Laatste gemelde item · ' + date(status.time) : 'Voorbeeld van de publicatie'}</span>
     </p>}
   </article>;
+}
+
+function MenuBoardPreview({ item }) {
+  const board = useRef(null);
+  useEffect(() => fitMenuBoard(board.current), [item]);
+  return <div className="menu-board" ref={board}>
+    <div className="menu-board-photo" />
+    <div className="menu-board-panel">
+      <h3>{item.name}</h3>
+      <ul>{item.rows.map(({ name, price }, index) => <li key={index}><span>{name}</span><span>{price}</span></li>)}</ul>
+    </div>
+  </div>;
 }

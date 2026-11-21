@@ -1,3 +1,5 @@
+import { fitMenuBoard } from './menu-board-fit.js';
+
 const stage = document.getElementById('stage');
 const id = location.pathname.split('/')[2];
 const key = new URLSearchParams(location.hash.slice(1)).get('k');
@@ -14,11 +16,18 @@ let currentUrl;
 let revision = 0;
 let issue = '';
 let visibleIndex = null;
+let stopFitting = () => {};
+
+function show(element) {
+  stopFitting();
+  stage.replaceChildren(element);
+  stopFitting = element.classList.contains('menu-board') ? fitMenuBoard(element) : () => {};
+}
 
 function message(text) {
   const p = document.createElement('p');
   p.textContent = text;
-  stage.replaceChildren(p);
+  show(p);
 }
 
 function renderMenu(item) {
@@ -84,7 +93,7 @@ async function render(cache) {
       };
       element.src = url;
     }
-    stage.replaceChildren(element);
+    show(element);
     visibleIndex = index;
     if (currentUrl) URL.revokeObjectURL(currentUrl);
     currentUrl = url;
@@ -100,6 +109,7 @@ async function render(cache) {
 
 function activate(release, cache) {
   active = release;
+  stage.dataset.orientation = release.orientation || 'auto';
   items = release.items;
   index = 0;
   visibleIndex = null;
@@ -135,6 +145,14 @@ async function start() {
       if (response.status === 403 && !active) message('Deze schermlink is ongeldig.');
       if (!response.ok) throw new Error('Publicatie ophalen mislukt.');
       const release = await response.json();
+      const orientation = release.orientation || 'auto';
+      if (!active || active.version === release.version) {
+        stage.dataset.orientation = orientation;
+        if (active && active.orientation !== orientation) {
+          active = { ...active, orientation };
+          await cache.put(manifest, new Response(JSON.stringify(active)));
+        }
+      }
       if (release.version && active?.version !== release.version) {
         const files = [...new Set(release.items.filter(item => item.type !== 'menu').map(mediaUrl))];
         for (const url of files) {
@@ -162,3 +180,4 @@ async function start() {
 }
 
 start().catch(() => message('De speler kon de offline opslag niet openen.'));
+

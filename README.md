@@ -43,3 +43,5 @@ De speler controleert ongeveer om de 30 seconden op een nieuwe publicatie. Hij w
 Elke speler stuurt ongeveer elke 30 seconden een signaal met de geladen publicatie, het zichtbare item en een eventuele afspeelfout. Na ruim twee minuten zonder signaal toont het dashboard **Geen signaal**.
 
 Bij **Voorbeelden** staan de vijf schermen naast elkaar in portretformaat. Het dashboard toont het laatst gemelde item uit de huidige publicatie. Als er geen bruikbare melding is, toont het het eerste item van de publicatie. Voor de fysieke beeldweergave blijft een test aan het scherm nodig.
+
+Kies bij **Schermen → Schermoriëntatie** per scherm voor **Automatisch**, **Portret** of **Landschap**. In automatische modus kiest de speler de indeling op basis van zijn viewport. De andere opties leggen de menukaartindeling vast. De speler neemt wijzigingen mee bij de volgende synchronisatie, zonder de playlist opnieuw te publiceren.
