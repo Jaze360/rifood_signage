@@ -97,7 +97,11 @@ export default function Studio() {
     <aside>
       <div className="brand"><span className="brand-icon">▰</span> Signage Studio</div>
       <nav aria-label="Dashboard">
-        {sections.map((name, index) => <button key={name} aria-current={section === name ? 'page' : undefined} onClick={() => setSection(name)}>
+        {sections.map((name, index) => <button key={name} aria-current={section === name ? 'page' : undefined} onClick={() => {
+          if (section === name) return;
+          setSection(name);
+          window.scrollTo(0, 0);
+        }}>
           <span aria-hidden="true">{['▣', '▥', '▧', '≡', '▷'][index]}</span>{name}
         </button>)}
       </nav>
@@ -155,6 +159,7 @@ export default function Studio() {
 
       {section === 'Menukaarten' && <div className="split">
         <section className="panel collection"><h2>Menukaarten</h2>{data.menus.map(item => <button className="secondary" key={item.id} onClick={() => setMenu(item)}>{item.name}</button>)}<button className="secondary" onClick={() => setMenu(blankMenu())}>+ Nieuwe menukaart</button></section>
+        <MobilePicker label="Menukaart kiezen" items={data.menus} value={menu.id} onSelect={item => setMenu(item || blankMenu())} />
         <form className="panel" onSubmit={event => {
           event.preventDefault();
           void act(() => post(api, { ...menu, action: 'menu' }), 'Menukaart opgeslagen.');
@@ -166,7 +171,7 @@ export default function Studio() {
             <label>Prijs<input maxLength={30} value={row.price} onChange={event => setMenu({ ...menu, rows: menu.rows.map((item, i) => i === index ? { ...item, price: event.target.value } : item) })} /></label>
             <button type="button" className="secondary" aria-label={'Verwijder gerecht ' + (index + 1)} disabled={menu.rows.length === 1} onClick={() => setMenu({ ...menu, rows: menu.rows.filter((_, i) => i !== index) })}>×</button>
           </div>
-            <label>Ingrediënten<input maxLength={240} value={row.ingredients || ''} onChange={event => setMenu({ ...menu, rows: menu.rows.map((item, i) => i === index ? { ...item, ingredients: event.target.value } : item) })} /></label>
+            <label>Ingrediënten<textarea rows={2} maxLength={240} value={row.ingredients || ''} onChange={event => setMenu({ ...menu, rows: menu.rows.map((item, i) => i === index ? { ...item, ingredients: event.target.value } : item) })} /></label>
           </div>)}
           <div className="actions"><button type="button" className="secondary" disabled={menu.rows.length >= 12} onClick={() => setMenu({ ...menu, rows: [...menu.rows, { name: '', price: '' }] })}>+ Gerecht</button><button disabled={busy}>Opslaan</button></div>
         </form>
@@ -174,6 +179,7 @@ export default function Studio() {
 
       {section === 'Playlists' && <div className="split">
         <section className="panel collection"><h2>Playlists</h2>{data.playlists.map(item => <button className="secondary" key={item.id} onClick={() => setPlaylist(item)}>{item.name}</button>)}<button className="secondary" onClick={() => setPlaylist(blankPlaylist())}>+ Nieuwe playlist</button></section>
+        <MobilePicker label="Playlist kiezen" items={data.playlists} value={playlist.id} onSelect={item => setPlaylist(item || blankPlaylist())} />
         <form className="panel" onSubmit={event => {
           event.preventDefault();
           const publishTo = event.nativeEvent.submitter?.value || undefined;
@@ -209,6 +215,15 @@ export default function Studio() {
       </div>}
     </main>
   </div>;
+}
+
+function MobilePicker({ label, items, value, onSelect }) {
+  return <label className="mobile-picker">{label}
+    <select value={value || ''} onChange={event => onSelect(items.find(item => item.id === event.target.value))}>
+      <option value="">Nieuw aanmaken</option>
+      {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+    </select>
+  </label>;
 }
 
 function ScreenPreview({ device, status }) {
