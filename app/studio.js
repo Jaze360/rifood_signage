@@ -186,7 +186,9 @@ export default function Studio() {
           <button type="button" className="secondary" disabled={!selected || playlist.items.length >= 30} onClick={() => setPlaylist({ ...playlist, items: [...playlist.items, { id: selected, seconds: 10 }] })}>Toevoegen</button></div>
           <ol className="sequence">{playlist.items.map((item, index) => <li key={index}>
             <strong>{assets.find(asset => asset.id === item.id)?.name}</strong>
-            <label>Seconden<input type="number" min="2" max="300" required value={item.seconds} onChange={event => setPlaylist({ ...playlist, items: playlist.items.map((entry, i) => i === index ? { ...entry, seconds: Number(event.target.value) } : entry) })} /></label>
+            {assets.find(asset => asset.id === item.id)?.type?.startsWith('video/') ?
+              <p className="muted">Speelt volledig af</p> :
+              <label>Seconden<input type="number" min="2" max="300" required value={item.seconds} onChange={event => setPlaylist({ ...playlist, items: playlist.items.map((entry, i) => i === index ? { ...entry, seconds: Number(event.target.value) } : entry) })} /></label>}
             <button type="button" className="secondary" disabled={index === 0} aria-label="Omhoog" onClick={() => {
               const items = [...playlist.items];
               [items[index - 1], items[index]] = [items[index], items[index - 1]];

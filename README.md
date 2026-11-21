@@ -17,7 +17,7 @@ Een Next.js-dashboard met één beheeraccount en vijf onafhankelijke Full HD-spe
 ## Publiceren op een scherm
 
 1. Upload media bij **Media** of maak een **Menukaart**.
-2. Voeg de items in gewenste volgorde toe aan een **Playlist** en stel per item de afspeelduur in. Bij video gaat de speler door als de video eindigt of zodra de ingestelde tijd verstreken is.
+2. Voeg de items in gewenste volgorde toe aan een **Playlist** en stel voor afbeeldingen en menukaarten de afspeelduur in. Video's spelen volledig af en gaan daarna door naar het volgende item.
 3. Wijs de playlist toe bij **Schermen** en klik **Publiceren**. Bij een bestaande toewijzing kun je vanuit de playlist **Opslaan en publiceren op [scherm]** kiezen. Alleen opgeslagen wijzigingen worden in **Schermen** gemarkeerd tot je ze publiceert.
 4. Open of kopieer de volledige schermlink. Het gedeelte na het hekje is de sleutel voor dat scherm. Behandel de volledige link als een wachtwoord.
 

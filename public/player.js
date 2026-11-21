@@ -81,7 +81,7 @@ async function render(cache) {
     visibleIndex = index;
     issue = '';
     clearTimeout(timer);
-    timer = setTimeout(next, item.seconds * 1000);
+    if (!item.type.startsWith('video/')) timer = setTimeout(next, item.seconds * 1000);
   };
   let url;
   try {
@@ -114,7 +114,21 @@ async function render(cache) {
       visibleIndex = null;
       element.onerror = fail;
       timer = setTimeout(fail, 12000);
-      void element.play().then(playing, fail);
+      void element.play().then(() => {
+        if (frame !== revision || failed) return;
+        playing();
+        let lastTime = element.currentTime;
+        const watchProgress = () => {
+          clearTimeout(timer);
+          timer = setTimeout(fail, 20000);
+        };
+        watchProgress();
+        element.ontimeupdate = () => {
+          if (frame !== revision || failed || element.currentTime <= lastTime) return;
+          lastTime = element.currentTime;
+          watchProgress();
+        };
+      }, fail);
     } else playing();
   } catch {
     if (url) URL.revokeObjectURL(url);
