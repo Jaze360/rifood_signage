@@ -38,6 +38,8 @@
 }
 
 .menu-board-panel {
+  position: relative;
+  isolation: isolate;
   min-width: 0;
   min-height: 0;
   display: flex;
@@ -56,6 +58,7 @@
 }
 
 .menu-board-panel :is(h1, h3) {
+  position: relative;
   align-self: stretch;
   flex: none;
   margin: 0;
@@ -115,6 +118,27 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  .menu-board-panel::before {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    z-index: -1;
+    inset: 0 0 auto;
+    height: 36%;
+    background: linear-gradient(112deg, transparent 30%, #dfb04b18 50%, transparent 70%);
+    animation: menu-gold-sweep 1150ms ease-out both;
+  }
+
+  .menu-board-panel :is(h1, h3)::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: max(2px, .35cqw);
+    background: linear-gradient(90deg, #ffdb8c, #dfb04b00);
+    transform-origin: left;
+    animation: menu-gold-rule 700ms ease-out both;
+  }
+
   .menu-board-mark {
     animation: menu-enter 420ms ease-out both;
   }
@@ -126,6 +150,17 @@
   .menu-board-panel li {
     animation: menu-enter 380ms ease-out calc(100ms + var(--menu-entry-delay, 0ms)) both;
   }
+}
+
+@keyframes menu-gold-sweep {
+  from { transform: translateX(-70%); opacity: 0; }
+  38% { opacity: 1; }
+  to { transform: translateX(70%); opacity: 0; }
+}
+
+@keyframes menu-gold-rule {
+  from { transform: scaleX(0); opacity: 1; }
+  to { transform: scaleX(1); opacity: .35; }
 }
 
 @keyframes menu-enter {
